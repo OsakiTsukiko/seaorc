@@ -4,9 +4,9 @@ const fs = std.fs;
 const httpz = @import("httpz");
 const zqlite = @import("zqlite");
 
-const login = @import("./handler/login.zig").login;
 const Global = @import("./domain/global.zig").Global;
-
+const login = @import("./handler/login.zig").login;
+const register = @import("./handler/register.zig").register;
 const setupDatabase = @import("./database/setup.zig").setupDatabase;
 
 const DATABASE_FILENAME = "seaorc.sqlite";
@@ -30,7 +30,7 @@ pub fn main() !void {
     const flags =  zqlite.OpenFlags.Create | zqlite.OpenFlags.EXResCode;
     var conn = try zqlite.open(database_path, flags);
     defer conn.close();
-    setupDatabase(&conn);
+    try setupDatabase(&conn);
 
     // Setup Global
 
@@ -54,6 +54,7 @@ pub fn main() !void {
     }
     
     var router = server.router();
+    router.post("/register", register);
     router.post("/login", login);
 
     // blocks
