@@ -11,6 +11,15 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    const httpz_module = b.dependency(
+        "httpz", 
+        .{
+                .target = target, 
+                .optimize = optimize
+            }
+    ).module("httpz");
+    exe.root_module.addImport("httpz", httpz_module);
+
     b.installArtifact(exe);
 
     const run_cmd = b.addRunArtifact(exe);
