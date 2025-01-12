@@ -7,6 +7,10 @@
             .url = "git+https://github.com/karlseguin/http.zig?ref=zig-0.13#7d2ddae87af9b110783085c0ea6b03985faa4584",
             .hash = "12208c1f2c5f730c4c03aabeb0632ade7e21914af03e6510311b449458198d0835d6",
         },
+        .zqlite = .{
+            .url = "git+https://github.com/karlseguin/zqlite.zig?ref=zig-0.13#f21be18a46866b8091346f91166e3fbe1e614b92",
+            .hash = "12205c870252c9d4a38397809f5388b13dbc6a4550f50d5f214a355f601e38814a67",
+        },
     },
 
     .paths = .{

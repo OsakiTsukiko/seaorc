@@ -11,6 +11,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
+    // httpz
     const httpz_module = b.dependency(
         "httpz", 
         .{
@@ -19,6 +20,16 @@ pub fn build(b: *std.Build) void {
             }
     ).module("httpz");
     exe.root_module.addImport("httpz", httpz_module);
+
+    // zqlite
+    const zqlite = b.dependency("zqlite", .{
+        .target = target,
+        .optimize = optimize,
+    });
+
+    exe.linkLibC();
+    exe.linkSystemLibrary("sqlite3");
+    exe.root_module.addImport("zqlite", zqlite.module("zqlite"));
 
     b.installArtifact(exe);
 
