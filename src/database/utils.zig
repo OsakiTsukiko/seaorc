@@ -10,8 +10,21 @@ pub const DBUtils = struct {
         return user_id;
     }
 
-    pub fn getUser(conn: *zqlite.Conn, username: []const u8, passwordHash: []const u8) !i64 {
-        const row = try conn.row("select * from users where username = ?1 and passwordhash = ?2 limit 1", .{username, passwordHash});
+    pub fn getUserPWHash(conn: *zqlite.Conn, username: []const u8) ![120]u8 {
+        const row = try conn.row("select * from users where username = ?1 limit 1", .{username});
+        if (row) |user| {
+            defer user.deinit();
+            const pwhash_hex = user.text(2);
+            var res: [120]u8 = undefined;
+            @memcpy(&res, pwhash_hex);
+            return res;
+        } else {
+            return error.UserNotInDatabase;
+        }
+    }
+
+    pub fn getUserID(conn: *zqlite.Conn, username: []const u8) !i64 {
+        const row = try conn.row("select * from users where username = ?1 limit 1", .{username});
         if (row) |user| {
             defer user.deinit();
             return user.int(0);

@@ -5,6 +5,7 @@ const httpz = @import("httpz");
 
 const Global = @import("../domain/global.zig").Global;
 const DBUtils = @import("../database/utils.zig").DBUtils;
+const CryUtils = @import("../crypto/utils.zig").CryptoUtils;
 
 const LoginBody = struct {
     username: []const u8,
@@ -34,18 +35,17 @@ pub fn login(global: *Global, req: *httpz.Request, res: *httpz.Response) !void {
         };
         defer parsed_body.deinit();
         
-        // TODO: HASH PASSWORD!!!!
-        const user_id = DBUtils.getUser(global.dbconn, parsed_body.value.username, parsed_body.value.password) catch |err| {
+        const pwhash_hex = DBUtils.getUserPWHash(global.dbconn, parsed_body.value.username) catch |err| {
             switch (err) {
                 error.UserNotInDatabase => {
                     res.status = 401; // UNAUTHORIZED
                     try res.json(.{
-                        .err = "WRONG USERNAME or PASSWORD!",
+                        .err = "Wrong username and password!",
                     }, .{});
                     return;
                 },
                 else => {
-                    log.debug("⚠️  DATABASE ERROR on LOGIN: {s} {any}", .{parsed_body.value.username, err});
+                    log.debug("⚠️  DataBase error on login: {s} {any}", .{parsed_body.value.username, err});
                     res.status = 500; // INTERNAL SERVER ERROR
                     try res.json(.{
                         .err = "Some database error OCCURED!",
@@ -54,12 +54,34 @@ pub fn login(global: *Global, req: *httpz.Request, res: *httpz.Response) !void {
                 }
             }
         };
+
+        var pwhash: [60]u8 = undefined;
+        _ = try std.fmt.hexToBytes(&pwhash, &pwhash_hex);
+
+        const verif = CryUtils.verifyPassword(global.allocator, parsed_body.value.password, &pwhash) catch {
+            log.debug("⚠️  Unable to verify password!: {s} {any}", .{parsed_body.value.username, pwhash.len});
+            res.status = 500; // INTERNAL SERVER ERROR
+            try res.json(.{
+                .err = "Unable to VERIFY password!",
+            }, .{});
+            return;
+        };
+
+        if (verif) {
+            const user_id = try DBUtils.getUserID(global.dbconn, parsed_body.value.username);
+            res.status = 200; // OK
+            try res.json(.{
+                .user_id = user_id,
+            }, .{});
+            return;
+        } else {
+            res.status = 400; // OK
+            try res.json(.{
+                .err = "Incorrect Password!",
+            }, .{});
+            return;
+        }
         
-        res.status = 200; // OK
-        try res.json(.{
-            .user_id = user_id,
-        }, .{});
-        return;
     } else { // no body
         res.status = 400; // BAD REQUEST
         try res.json(.{

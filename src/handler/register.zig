@@ -5,6 +5,7 @@ const httpz = @import("httpz");
 
 const Global = @import("../domain/global.zig").Global;
 const DBUtils = @import("../database/utils.zig").DBUtils;
+const CryUtils = @import("../crypto/utils.zig").CryptoUtils;
 
 const RegisterBody = struct {
     username: []const u8,
@@ -34,8 +35,17 @@ pub fn register(global: *Global, req: *httpz.Request, res: *httpz.Response) !voi
         };
         defer parsed_body.deinit();
 
-        // TODO: HASH PASSWORD!!!!
-        const user_id = DBUtils.addUser(global.dbconn, parsed_body.value.username, parsed_body.value.password) catch |err| {
+        const pwhash = CryUtils.hashPassword(global.allocator, parsed_body.value.password) catch {
+            res.status = 500; // INTERNAL SERVER ERROR
+            try res.json(.{
+                .err = "Unable to HASH password!",
+            }, .{});
+            return;
+        };
+
+        const pwhash_hex = std.fmt.bytesToHex(pwhash, .lower);
+
+        const user_id = DBUtils.addUser(global.dbconn, parsed_body.value.username, &pwhash_hex) catch |err| {
             switch (err) {
                 error.ConstraintUnique => {
                     res.status = 400; // BAD REQUEST
