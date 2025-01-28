@@ -1,6 +1,7 @@
 const std = @import("std");
 const log = std.log;
 const json = std.json;
+const fmt = std.fmt;
 const httpz = @import("httpz");
 
 const Global = @import("../domain/global.zig").Global;
@@ -45,7 +46,7 @@ pub fn register(global: *Global, req: *httpz.Request, res: *httpz.Response) !voi
 
         const pwhash_hex = std.fmt.bytesToHex(pwhash, .lower);
 
-        const user_id = DBUtils.addUser(global.dbconn, parsed_body.value.username, &pwhash_hex) catch |err| {
+        const user_token = DBUtils.addUser(global.dbconn, parsed_body.value.username, &pwhash_hex) catch |err| {
             switch (err) {
                 error.ConstraintUnique => {
                     res.status = 400; // BAD REQUEST
@@ -67,7 +68,7 @@ pub fn register(global: *Global, req: *httpz.Request, res: *httpz.Response) !voi
         
         res.status = 200; // OK
         try res.json(.{
-            .user_id = user_id,
+            .user_token = fmt.bytesToHex(user_token, .lower),
         }, .{});
         return;
 

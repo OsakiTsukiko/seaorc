@@ -7,7 +7,9 @@ pub fn setupDatabase(conn: *zqlite.Conn) !void {
         \\user_id integer primary key autoincrement,
         \\username text not null,
         \\passwordhash text not null,
+        \\token blob not null,
         \\constraint unique_username unique(username)
+        \\constraint unique_token unique(token)
         \\)
     , .{});
 }

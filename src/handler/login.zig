@@ -1,6 +1,7 @@
 const std = @import("std");
 const log = std.log;
 const json = std.json;
+const fmt = std.fmt;
 const httpz = @import("httpz");
 
 const Global = @import("../domain/global.zig").Global;
@@ -68,10 +69,10 @@ pub fn login(global: *Global, req: *httpz.Request, res: *httpz.Response) !void {
         };
 
         if (verif) {
-            const user_id = try DBUtils.getUserID(global.dbconn, parsed_body.value.username);
+            const user_token = try DBUtils.getUserTokenU(global.dbconn, parsed_body.value.username);
             res.status = 200; // OK
             try res.json(.{
-                .user_id = user_id,
+                .user_token = fmt.bytesToHex(user_token, .lower),
             }, .{});
             return;
         } else {
