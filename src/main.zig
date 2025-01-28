@@ -14,7 +14,11 @@ const DATABASE_FILENAME = "seaorc.sqlite";
 pub fn main() !void {
     log.info("🐉 Initialize SeaOrc!", .{});
 
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    // Initialize Allocator
+    var gpa = std.heap.GeneralPurposeAllocator(.{
+        .thread_safe = true
+    }){};
+    defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
     // Setup Paths
