@@ -38,6 +38,19 @@ pub const DBUtils = struct {
         }
     }
 
+    pub fn getUserUsernameID(conn: *zqlite.Conn, allocator: std.mem.Allocator, uid: i64) ![]u8 {
+        const row = try conn.row("select * from users where user_id = ?1 limit 1", .{uid});
+        if (row) |user| {
+            defer user.deinit();
+            const len = user.textLen(1);
+            const res = try allocator.alloc(u8, len);
+            @memcpy(res, user.text(1));
+            return res;
+        } else {
+            return error.UserNotInDatabase;
+        }
+    }
+
     pub fn getUserTokenU(conn: *zqlite.Conn, username: []const u8) ![16]u8 {
         const row = try conn.row("select * from users where username = ?1 limit 1", .{username});
         if (row) |user| {
@@ -45,6 +58,16 @@ pub const DBUtils = struct {
             var res: [16]u8 = undefined;
             @memcpy(&res, user.blob(3)[0..16]);
             return res;
+        } else {
+            return error.UserNotInDatabase;
+        }
+    }
+
+    pub fn getUserIDT(conn: *zqlite.Conn, token: [16]u8) !i64 {
+        const row = try conn.row("select * from users where token = ?1 limit 1", .{&token});
+        if (row) |user| {
+            defer user.deinit();
+            return user.int(0);
         } else {
             return error.UserNotInDatabase;
         }

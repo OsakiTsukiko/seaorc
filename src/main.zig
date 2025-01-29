@@ -7,6 +7,7 @@ const zqlite = @import("zqlite");
 const Global = @import("./domain/global.zig").Global;
 const login = @import("./handler/login.zig").login;
 const register = @import("./handler/register.zig").register;
+const send = @import("./handler/send.zig").send;
 const setupDatabase = @import("./database/setup.zig").setupDatabase;
 
 const DATABASE_FILENAME = "seaorc.sqlite";
@@ -60,6 +61,7 @@ pub fn main() !void {
     var router = server.router();
     router.post("/register", register);
     router.post("/login", login);
+    router.post("/send", send);
 
     // blocks
     try server.listen(); 
