@@ -84,4 +84,43 @@ pub const DBUtils = struct {
         const msg_id = conn.lastInsertedRowId();
         return msg_id;
     }
+
+    pub const Message = struct {
+        allocator: std.mem.Allocator,
+        sender: []const u8,
+        timestamp: i64,
+        message: []const u8,
+
+        pub fn new(allocator: std.mem.Allocator, sender: []const u8, timestamp: i64, message: []const u8) !Message {
+            return Message {
+                .allocator = allocator,
+                .sender = try allocator.dupe(u8, sender),
+                .timestamp = timestamp,
+                .message = try allocator.dupe(u8, message),  
+            };
+        }
+
+        pub fn deinit(self: *const Message) void {
+            self.allocator.free(self.sender);
+            self.allocator.free(self.message);
+        }
+    };
+
+    pub fn getMessages(conn: *zqlite.Conn, allocator: std.mem.Allocator, uid: i64) !std.ArrayList(Message) {
+        var rows = try conn.rows("select * from messages where receiver_id = ?1", .{uid});
+        defer rows.deinit();
+
+        var res = std.ArrayList(Message).init(allocator);
+        
+        while (rows.next()) |row| {
+            const sender = row.text(2);
+            const timestamp = row.int(3);
+            const message = row.text(4);
+
+            const msg = try Message.new(allocator, sender, timestamp, message);
+            try res.append(msg);
+        }
+
+        return res;
+    }
 };
