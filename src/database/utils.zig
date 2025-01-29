@@ -121,6 +121,9 @@ pub const DBUtils = struct {
             try res.append(msg);
         }
 
+        try conn.exec("delete from messages where receiver_id = ?1", .{uid});
+
         return res;
     }
+
 };
