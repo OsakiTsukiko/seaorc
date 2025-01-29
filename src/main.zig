@@ -63,7 +63,7 @@ pub fn main() !void {
     router.post("/register", register);
     router.post("/login", login);
     router.post("/send", send);
-    router.post("/receive", receive);
+    router.get("/receive", receive);
 
     // blocks
     try server.listen(); 
