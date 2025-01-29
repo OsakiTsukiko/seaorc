@@ -12,4 +12,18 @@ pub fn setupDatabase(conn: *zqlite.Conn) !void {
         \\constraint unique_token unique(token)
         \\)
     , .{});
+
+    try conn.exec(
+        \\create table if not exists messages (
+        \\message_id integer primary key autoincrement,
+        \\receiver_id integer not null,
+        \\sender text not null,
+        \\timestamp integer not null,
+        \\message text not null,
+        \\foreign key (receiver_id) references users(user_id)
+        \\);
+        \\
+        \\
+        \\create index if not exists idx_receiver_id on messages(receiver_id);
+    , .{});
 }

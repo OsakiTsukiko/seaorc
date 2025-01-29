@@ -72,4 +72,16 @@ pub const DBUtils = struct {
             return error.UserNotInDatabase;
         }
     }
+
+    // MESSAGES
+
+    pub fn addMessage(conn: *zqlite.Conn, receiver_id: i64, sender: []const u8, message: []const u8) !i64 {
+        log.debug("✉️  Adding Message to DB from {s}", .{sender});
+        
+        const timestamp = std.time.timestamp();
+
+        try conn.exec("insert into messages (receiver_id, sender, timestamp, message) values (?1, ?2, ?3, ?4)", .{receiver_id, sender, timestamp, message});
+        const msg_id = conn.lastInsertedRowId();
+        return msg_id;
+    }
 };

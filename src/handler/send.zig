@@ -73,14 +73,24 @@ pub fn send(global: *Global, req: *httpz.Request, res: *httpz.Response) !void {
             else => { return err; }
         };
 
-        std.debug.print("{d} -> {d} : {s}\n", .{uid, receiver_id, parsed_body.value.message});
+        // std.debug.print("{d} -> {d} : {s}\n", .{uid, receiver_id, parsed_body.value.message});
+
+        const mid = DBUtils.addMessage(global.dbconn, receiver_id, sender, parsed_body.value.message) catch |err| switch (err) {
+            else => {
+                res.status = 500; // INTERNAL SERVER ERROR
+                try res.json(.{
+                    .err = "Internal server error!",
+                }, .{});
+                return;
+            }
+        };
 
         res.status = 200; // OK
         try res.json(.{
-            .msg = "Message sent successfully!",
+            .msg_id = mid,
         }, .{});
         return;
-        
+
     } else { // no body
         res.status = 400; // BAD REQUEST
         try res.json(.{
