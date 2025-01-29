@@ -4,7 +4,7 @@
 <h5>(deletes delivered messages)</h4>
 </div>
 
-# How to Run / Build ?
+## How to Run / Build ?
 > [!TIP]
 > Currently on ZIG 0.13.0
 ```bash
@@ -13,5 +13,7 @@ cd seaorc
 zig build run # 👌
 ```
 
-# How to USE ?
+## How to USE ?
 SOON? `(take a look at main.zig)`
+
+# Also check out [Cli Orc](https://github.com/OsakiTsukiko/cli-orc)
