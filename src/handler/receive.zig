@@ -12,7 +12,7 @@ const AuthMiddleware = @import("../middleware/auth.zig").AuthMiddleware;
 pub const Message = struct {
     sender: []const u8,
     timestamp: i64,
-    message: []const u8,
+    content: []const u8,
 };
 
 pub fn receive(global: *Global, req: *httpz.Request, res: *httpz.Response) !void {
@@ -39,7 +39,7 @@ pub fn receive(global: *Global, req: *httpz.Request, res: *httpz.Response) !void
         try list.append(Message {
             .sender = msg.sender,
             .timestamp = msg.timestamp,
-            .message = msg.message,
+            .content = msg.message,
         });
     }
 
