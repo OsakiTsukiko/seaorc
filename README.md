@@ -16,4 +16,4 @@ zig build run # 👌
 ## How to USE ?
 SOON? `(take a look at main.zig)`
 
-# Also check out [Cli Orc](https://github.com/OsakiTsukiko/cli-orc)
+# Also check out [Cli Orc](https://github.com/OsakiTsukiko/cliorc)
